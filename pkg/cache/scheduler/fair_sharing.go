@@ -189,21 +189,13 @@ func dominantResourceShare(node dominantResourceShareNode, wlReq resources.Flavo
 	// always a Cohort, because of the early return above.
 	lendable := node.parentHRN().getResourceNode().Lendable
 	for rName, b := range borrowing {
-		lr := lendable[rName]
-		comparisonResult := lr.CmpInt64(0)
-		if comparisonResult < 0 {
-			continue
-		}
-		var ratio float64
-		if comparisonResult == 0 {
-			ratio = math.Inf(1)
-		} else if comparisonResult > 0 {
-			ratio = b.PerThousandOf(lr)
-		}
-		// Use alphabetical order to get a deterministic resource name.
-		if ratio > drs.unweightedRatio || (ratio == drs.unweightedRatio && rName < drs.dominantResource) {
-			drs.unweightedRatio = ratio
-			drs.dominantResource = rName
+		if lr := lendable[rName]; lr.CmpInt64(0) >= 0 {
+			ratio := b.PerThousandOf(lr)
+			// Use alphabetical order to get a deterministic resource name.
+			if ratio > drs.unweightedRatio || (ratio == drs.unweightedRatio && rName < drs.dominantResource) {
+				drs.unweightedRatio = ratio
+				drs.dominantResource = rName
+			}
 		}
 	}
 	return drs
